@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rastreador WhatsApp - Descubra a Verdade</title>
+<meta name="description" content="Monitore qualquer WhatsApp em segundos. Ferramenta 100% anônima e segura.">
+
+<!-- Font Awesome para ícones melhores -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  :root {
+    --primary: #22c55e;
+    --primary-dark: #16a34a;
+    --primary-light: #86efac;
+    --dark-bg: #0a0a0a;
+    --card-bg: #1a1a1a;
+    --border-color: #2a2a2a;
+    --text-primary: #f2f2f2;
+    --text-secondary: #a1a1aa;
+    --text-muted: #71717a;
+    --danger: #ef4444;
+    --warning: #eab308;
+    --success: #22c55e;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #0f0f0f 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .container { max-width: 720px; margin: 0 auto; padding: 20px 16px; }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
+  @keyframes glow { 0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); } 50% { box-shadow: 0 0 40px rgba(34, 197, 94, 0.6); } }
+  @keyframes notificationIn { 0% { transform: translateX(120%); } 10% { transform: translateX(0); } 90% { transform: translateX(0); } 100% { transform: translateX(120%); } }
+
+  /* ICONS FIX */
+  .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+  }
+  .icon i { font-size: 1.2rem; }
+  .icon-lg i { font-size: 1.8rem; }
+  .icon-xl i { font-size: 2.5rem; }
+  .icon-2xl i { font-size: 3.5rem; }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+    animation: fadeIn 0.8s ease;
+  }
+
+  .logo-container {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 40px rgba(34, 197, 94, 0.2);
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 5vw, 2.8rem);
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto 32px;
+  }
+
+  /* CARDS */
+  .card {
+    background: linear-gradient(135deg, rgba(26, 26, 26, 0.8), rgba(42, 42, 42, 0.4));
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    animation: fadeIn 0.6s ease;
+    transition: all 0.3s ease;
+  }
+
+  .card-premium {
+    border: 2px solid var(--primary);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.02));
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.15);
+  }
+
+  /* BUTTONS */
+  .btn {
+    width: 100%;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #000;
+    box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(34, 197, 94, 0.4);
+  }
+
+  /* QUIZ IMPROVEMENTS */
+  .quiz-step { display: none; }
+  .quiz-step.active { display: block; animation: fadeIn 0.5s ease; }
+
+  .quiz-progress {
+    width: 100%;
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 999px;
+    margin-bottom: 30px;
+    overflow: hidden;
+  }
+
+  .quiz-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    width: 33%;
+    transition: width 0.3s ease;
+  }
+
+  .quiz-question {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .quiz-options {
+    display: grid;
+    gap: 12px;
+  }
+
+  .quiz-option {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    padding: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .quiz-option:hover {
+    border-color: var(--primary);
+    background: rgba(34, 197, 94, 0.1);
+    transform: translateY(-2px);
+  }
+
+  /* VSL / IMAGES IN QUIZ */
+  .quiz-media {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    position: relative;
+    background: #000;
+    aspect-ratio: 16/9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .quiz-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  
+    transition: filter 0.5s ease;
+  }
+
+  .quiz-media .overlay-text {
+    position: absolute;
+    z-index: 2;
+    background: rgba(0,0,0,0.6);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+  }
+
+  /* PAGES */
+  .page { display: none; animation: fadeIn 0.5s ease; }
+  .page.active { display: block; }
+
+  /* LANDING PAGE */
+  .input-phone {
+    width: 100%;
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 2px solid var(--border-color);
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .input-phone:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .feature-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .feature-icon { color: var(--primary); }
+
+  /* SCANNING */
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+
+  .console-box {
+    background: #000;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    height: 200px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: var(--primary);
+  }
+
+  /* RESULTS */
+  .grid-locked {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 30px;
+  }
+
+  .locked-item {
+    aspect-ratio: 1;
+    background: rgba(34, 197, 94, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .locked-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(12px); /* Fotos borradas */
+  }
+
+  .locked-item .lock-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-size: 1.5rem;
+  }
+
+  /* CHECKOUT MODAL */
+  .checkout-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    padding: 16px;
+    backdrop-filter: blur(8px);
+  }
+
+  .checkout-overlay.active { display: flex; }
+
+  .checkout-modal {
+    max-width: 450px;
+    width: 100%;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .checkout-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+
+  .price-box {
+    text-align: center;
+    padding: 20px;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 12px;
+    margin: 20px 0;
+  }
+
+  .price-old { text-decoration: line-through; color: var(--text-muted); font-size: 0.9rem; }
+  .price-new { font-size: 2.5rem; font-weight: 900; color: var(--primary); }
+
+  /* NOTIFICATIONS */
+  .notification {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: var(--card-bg);
+    border: 1px solid var(--primary);
+    padding: 12px 20px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    transform: translateX(150%);
+    transition: transform 0.5s ease;
+  }
+
+  .notification.active { transform: translateX(0); }
+  .notification-img { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); display: flex; align-items: center; justify-content: center; color: #000; }
+  .notification-text b { color: var(--primary); }
+  .notification-text p { font-size: 0.8rem; color: var(--text-secondary); }
+
+  /* DOWNSELL BOX */
+  .downsell-box {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px dashed var(--danger);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: none;
+    text-align: center;
+  }
+  .downsell-box.active { display: block; animation: pulse 2s infinite; }
+
+</style>
+</head>
+<body>
+
+  <!-- NOTIFICATION SYSTEM -->
+  <div id="notification" class="notification">
+    <div class="notification-img"><i class="fas fa-shopping-cart"></i></div>
+    <div class="notification-text">
+      <span id="notif-name"><b>nay</b> acabou de descobrir a Verdade</span>
+      <p>há 2 minutos</p>
+    </div>
+  </div>
+
+  <!-- PAGE 0: QUIZ -->
+  <div id="page-quiz" class="page active">
+    <div class="container">
+      <div class="header">
+        <div class="logo-container">
+          <div class="icon icon-2xl" style="color: #000;">
+            <i class="fas fa-search"></i>
+          </div>
+        </div>
+        <h1>Descubra a Verdade</h1>
+        <p class="subtitle">Responda 3 perguntas rápidas para liberar acesso à ferramenta de rastreamento.</p>
+      </div>
+
+      <div class="card card-premium">
+        <div class="quiz-progress">
+          <div class="quiz-progress-bar" id="quizProgressBar"></div>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="quiz-step active" id="step1">
+          <div class="quiz-media">
+            <img src="foto.jpg" >
+          
+          </div>
+          <div class="quiz-question">Há quanto tempo você suspeita do comportamento?</div>
+          <div class="quiz-options">
+            <div class="quiz-option" onclick="nextQuiz(2)">Menos de 1 mês</div>
+            <div class="quiz-option" onclick="nextQuiz(2)">Entre 1 e 6 meses</div>
+            <div class="quiz-option" onclick="nextQuiz(2)">Mais de 6 meses</div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="quiz-step" id="step2">
+          <div class="quiz-media">
+            <img src="foto01.jpeg" alt="Mulher">
+           
+          </div>
+          <div class="quiz-question">O celular é escondido ou a senha foi mudada?</div>
+          <div class="quiz-options">
+            <div class="quiz-option" onclick="nextQuiz(3)">Sim</div>
+        
+            <div class="quiz-option" onclick="nextQuiz(3)">Não, mas age estranho</div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="quiz-step" id="step3">
+          <div class="quiz-media">
+            <img src="foto02.jpeg" alt="Mulher">
+            
+          </div>
+          <div class="quiz-question">Está preparado(a) para descobrir a verdade?</div>
+          <div class="quiz-options">
+            <div class="quiz-option" onclick="finishQuiz()">Sim, quero saber agora</div>
+            <div class="quiz-option" onclick="finishQuiz()">Estou nervoso(a), mas sim</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 1: LANDING -->
+  <div id="page-landing" class="page">
+    <div class="container">
+      <div class="header">
+        <div class="logo-container">
+          <div class="icon icon-2xl" style="color: #000;">
+            <i class="fab fa-whatsapp"></i>
+          </div>
+        </div>
+        <h1>Rastreie Qualquer WhatsApp em Segundos</h1>
+        <p class="subtitle">Ferramenta 100% anônima e segura. Descubra conversas, fotos, localizações e muito mais.</p>
+      </div>
+
+      <div class="card">
+        <form onsubmit="startScan(event)">
+          <input type="text" id="phoneInput" class="input-phone" placeholder="(00) 00000-0000" oninput="formatPhone(this)" required>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-bolt"></i>
+            <span>INICIAR VARREDURA</span>
+          </button>
+          <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem; margin-top: 12px;">
+            <i class="fas fa-shield-alt"></i> Conexão 256-bit criptografada | 100% anônimo
+          </p>
+        </form>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-item">
+          <div class="icon icon-lg feature-icon"><i class="fas fa-comments"></i></div>
+          <div>Conversas Privadas</div>
+        </div>
+        <div class="feature-item">
+          <div class="icon icon-lg feature-icon"><i class="fas fa-camera"></i></div>
+          <div>Fotos & Vídeos</div>
+        </div>
+        <div class="feature-item">
+          <div class="icon icon-lg feature-icon"><i class="fas fa-map-marker-alt"></i></div>
+          <div>Localização GPS</div>
+        </div>
+        <div class="feature-item">
+          <div class="icon icon-lg feature-icon"><i class="fas fa-users"></i></div>
+          <div>Contatos</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 2: SCANNING -->
+  <div id="page-scanning" class="page">
+    <div class="container">
+      <div class="header">
+        <h1 style="color: var(--primary);">Varredura em Curso...</h1>
+        <p class="subtitle">Analisando dados do número: <strong id="scan-phone"></strong></p>
+      </div>
+
+      <div class="card">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <p style="text-align: center; font-weight: 700; font-size: 1.2rem; color: var(--primary); margin-bottom: 20px;">
+          <span id="progressText">0%</span> Concluído
+        </p>
+        <div class="console-box" id="consoleBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 3: RESULTS -->
+  <div id="page-results" class="page">
+    <div class="container">
+      <div class="header">
+        <h1 style="color: var(--danger);"><i class="fas fa-exclamation-triangle"></i> VARREDURA CONCLUÍDA!</h1>
+        <p>Dados comprometedores encontrados para: <strong id="result-phone"></strong></p>
+      </div>
+
+      <div class="grid-locked">
+        <div class="locked-item">
+          <img src="nds1.jpeg" alt="img">
+          <div class="lock-overlay"><i class="fas fa-lock"></i></div>
+        </div>
+        <div class="locked-item">
+          <img src="nds2.jpeg" alt="img">
+          <div class="lock-overlay"><i class="fas fa-lock"></i></div>
+        </div>
+        <div class="locked-item">
+          <img src="nds3.jpeg" alt="img">
+          <div class="lock-overlay"><i class="fas fa-lock"></i></div>
+        </div>
+        <div class="locked-item">
+          <img src="nds4.jpeg" alt="img">
+          <div class="lock-overlay"><i class="fas fa-lock"></i></div>
+        </div>
+        <div class="locked-item">
+          <img src="nds5.jpeg" alt="img">
+          <div class="lock-overlay"><i class="fas fa-lock"></i></div>
+        </div>
+        <div class="locked-item">
+          <img src="nds6.jpeg" alt="img">
+          <div class="lock-overlay"><i class="fas fa-lock"></i></div>
+        </div>
+      </div>
+
+      <div class="card card-premium" style="text-align: center;">
+        <h3><i class="fas fa-unlock-alt"></i> ACESSO LIBERADO</h3>
+        <p style="margin: 15px 0;">O relatório contém 14 conversas recentes, 32 fotos apagadas e localização em tempo real.</p>
+        <button class="btn btn-primary" onclick="openCheckout()">
+          <i class="fas fa-eye"></i> VER TUDO AGORA
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHECKOUT MODAL -->
+  <div class="checkout-overlay" id="checkoutOverlay">
+    <div class="checkout-modal">
+      <button class="checkout-close" onclick="closeCheckout()"><i class="fas fa-times"></i></button>
+      
+      <h2 style="text-align: center; margin-bottom: 10px;">Finalizar Acesso</h2>
+      <p style="text-align: center; color: var(--text-secondary); font-size: 0.9rem;">Preencha para receber o acesso instantâneo.</p>
+
+      <div class="downsell-box" id="downsellBox">
+        <p><b>ESPERA!</b> Não vá embora ainda.</p>
+        <p>Liberamos um desconto de 50% para você!</p>
+      </div>
+
+      <div class="price-box">
+        <div class="price-old">De R$ 97,00</div>
+        <div class="price-new" id="displayPrice">R$ 29,90</div>
+        <p style="color: var(--warning); font-size: 0.8rem; font-weight: bold; margin-top: 5px;">
+          <i class="fas fa-clock"></i> Oferta expira em <span id="timer">15:00</span>
+        </p>
+      </div>
+
+      <form onsubmit="event.preventDefault(); alert('Redirecionando para pagamento seguro...');">
+        <input type="text" class="input-phone" style="font-size: 0.95rem; text-align: left;" placeholder="Nome Completo" required>
+        <input type="email" class="input-phone" style="font-size: 0.95rem; text-align: left;" placeholder="E-mail" required>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-check-circle"></i> LIBERAR ACESSO AGORA
+        </button>
+      </form>
+      
+      <p style="text-align: center; font-size: 0.7rem; color: var(--text-muted); margin-top: 15px;">
+        <i class="fas fa-lock"></i> Pagamento 100% criptografado e seguro.
+      </p>
+    </div>
+  </div>
+
+  <script>
+    let currentPrice = 29.90;
+    let downsellCount = 0;
+
+    // QUIZ LOGIC
+    function nextQuiz(step) {
+      document.querySelectorAll('.quiz-step').forEach(s => s.classList.remove('active'));
+      document.getElementById('step' + step).classList.add('active');
+      document.getElementById('quizProgressBar').style.width = (step * 33) + '%';
+    }
+
+    function finishQuiz() {
+      document.getElementById('page-quiz').classList.remove('active');
+      document.getElementById('page-landing').classList.add('active');
+    }
+
+    // PHONE FORMAT
+    function formatPhone(input) {
+      let v = input.value.replace(/\D/g, '').slice(0, 11);
+      if (v.length <= 2) input.value = '(' + v;
+      else if (v.length <= 7) input.value = '(' + v.slice(0, 2) + ') ' + v.slice(2);
+      else input.value = '(' + v.slice(0, 2) + ') ' + v.slice(2, 7) + '-' + v.slice(7);
+    }
+
+    // SCAN LOGIC
+    function startScan(e) {
+      e.preventDefault();
+      const phone = document.getElementById('phoneInput').value;
+      document.getElementById('scan-phone').textContent = phone;
+      document.getElementById('result-phone').textContent = phone;
+      document.getElementById('page-landing').classList.remove('active');
+      document.getElementById('page-scanning').classList.add('active');
+
+      let progress = 0;
+      const consoleLines = [
+        "Conectando aos servidores do WhatsApp...",
+        "Bypassing criptografia de ponta-a-ponta...",
+        "Acessando banco de dados SQL local...",
+        "Extraindo mensagens de texto...",
+        "Recuperando mídias apagadas...",
+        "Mapeando localização GPS...",
+        "Compilando relatório final..."
+      ];
+
+      const interval = setInterval(() => {
+        progress += Math.random() * 5;
+        if (progress > 100) progress = 100;
+        
+        document.getElementById('progressFill').style.width = progress + '%';
+        document.getElementById('progressText').textContent = Math.floor(progress) + '%';
+
+        if (progress % 15 < 5 && consoleLines.length > 0) {
+          const line = document.createElement('div');
+          line.textContent = "> " + consoleLines.shift();
+          document.getElementById('consoleBody').appendChild(line);
+          document.getElementById('consoleBody').scrollTop = document.getElementById('consoleBody').scrollHeight;
+        }
+
+        if (progress === 100) {
+          clearInterval(interval);
+          setTimeout(() => {
+            document.getElementById('page-scanning').classList.remove('active');
+            document.getElementById('page-results').classList.add('active');
+          }, 1000);
+        }
+      }, 150);
+    }
+
+    // CHECKOUT & DOWNSELL
+    function openCheckout() {
+      document.getElementById('checkoutOverlay').classList.add('active');
+      startTimer();
+      
+      // Gatilho de Downsell ao tentar fechar ou após tempo
+      window.history.pushState(null, null, window.location.pathname);
+      window.addEventListener('popstate', function (event) {
+        applyDownsell();
+      });
+    }
+
+    function closeCheckout() {
+      if (downsellCount < 1) {
+        applyDownsell();
+      } else {
+        document.getElementById('checkoutOverlay').classList.remove('active');
+      }
+    }
+
+    function applyDownsell() {
+      if (currentPrice > 15.90) {
+        downsellCount++;
+        currentPrice = 15.90;
+        document.getElementById('displayPrice').textContent = "R$ 15,90";
+        document.getElementById('downsellBox').classList.add('active');
+        alert("ESPERA! Liberamos um desconto especial para você. Acesso por apenas R$ 15,90!");
+      }
+    }
+
+    // TIMER
+    function startTimer() {
+      let duration = 15 * 60;
+      const display = document.getElementById('timer');
+      const timerInterval = setInterval(() => {
+        let minutes = Math.floor(duration / 60);
+        let seconds = duration % 60;
+        display.textContent = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+        if (--duration < 0) clearInterval(timerInterval);
+      }, 1000);
+    }
+
+    // NOTIFICATIONS
+    const names = [
+  "Maria", "Ana", "Julia", "Beatriz", "Fernanda", "Camila", "Larissa", "Amanda", "Bruna", "Carla",
+  "Patricia", "Juliana", "Rafaela", "Aline", "Vanessa", "Gabriela", "Leticia", "Isabela", "Yasmin", "Luana",
+  "Tatiane", "Elaine", "Renata", "Priscila", "Bianca", "Natália", "Vitória", "Eduarda", "Raquel", "Sabrina",
+  "Nicole", "Jéssica", "Daniela", "Lívia", "Marcela", "Débora", "Simone", "Cristiane", "Adriana", "Paula",
+  "Sandra", "Luciana", "Michele", "Evelyn", "Heloisa", "Alice", "Manuela", "Clara", "Helena", "Laura",
+  "Sofia", "Valentina", "Lorena", "Isis", "Melissa", "Esther", "Cecilia", "Elisa", "Marina", "Milena",
+  "Samara", "Andreia", "Roberta", "Karla", "Tatiana", "Gisele", "Marlene", "Neide", "Rosana", "Solange",
+  "Ivone", "Regina", "Cintia", "Alessandra", "Veronica", "Monique", "Tamara", "Daiane", "Eliane", "Flavia"
+];
+    function showNotification() {
+      const name = names[Math.floor(Math.random() * names.length)];
+      document.getElementById('notif-name').innerHTML = `<b>${name}</b> acabou de descobrir a Verdade`;
+      document.getElementById('notification').classList.add('active');
+      setTimeout(() => {
+        document.getElementById('notification').classList.remove('active');
+      }, 5000);
+    }
+
+    setInterval(showNotification, 12000);
+    setTimeout(showNotification, 3000);
+
+  </script>
+</body>
+</html>
